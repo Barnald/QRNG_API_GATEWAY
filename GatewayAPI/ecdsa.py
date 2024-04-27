@@ -31,13 +31,6 @@ def get_random_number(QRN_URL, API_KEY):
 
 	return response, int(backer['data'][0], 16)
 
-def bi(s):
-    i = 0
-    for c in s:
-        i <<= 8
-        i |= ord(c)
-    return i
-
 class Elliptic_curve:
     def __init__(self) -> None:
         #Defines curve parameters: Brainpool P-160-r1
@@ -73,10 +66,11 @@ class Elliptic_curve:
             return P
         if Q==self.inv(P):
             return [None, None]
+        
         x1 = P[0]; y1 = P[1]
         x2 = Q[0]; y2 = Q[1]
-        beta = (y1-y2) * gmpy.invert((x1-x2), self.p) % self.p
-        x3 = (pow(beta, 2, self.p) - x1 - x2) % self.p
+        beta = (y1-y2) / pow((x2-x1), self.p-2) % self.p
+        x3 = (beta**2 - x1 - x2) % self.p
         y3 = (beta*(x1-x3) - y1) % self.p
         return [x3, y3]
 
@@ -90,9 +84,10 @@ class Elliptic_curve:
             return P
         if P[1]==0:
             return [None, None]
+
         x  = P[0]; y = P[1]
-        beta = (3 * pow(x, 2, self.p) + self.a) * gmpy.invert(2*y, self.p) % self.p
-        backer_x = (pow(beta, 2, self.p) - 2*x) % self.p
+        beta = (3 * (x**2) + self.a) * pow(2*y, self.p-2) % self.p
+        backer_x = (beta**2 - x - x) % self.p
         backer_y = (beta*(x - backer_x) - y) % self.p
         return [backer_x, backer_y]
 
@@ -107,13 +102,14 @@ class Elliptic_curve:
         bits = bin(n)
         bits = bits[2:len(bits)] #get rid if unnecessary leading '0b'
         bits = bits[1:len(bits)]
-        backer = (None, None)
-        while n:
-            bit = n % 2
-            n = n >> 1
+        backer = (P[0], P[1])
+        i = 0
+        for bit in bits:
+            print(i)
+            i+=1
+            backer = self.ecc_double(backer)
             if bit == '1':
                 backer = self.ecc_add(backer, P)
-            backer = self.ecc_double(backer)
         return backer
 
 
