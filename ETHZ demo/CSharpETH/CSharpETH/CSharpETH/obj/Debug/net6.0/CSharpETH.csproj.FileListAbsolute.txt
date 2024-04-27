@@ -1,0 +1,15 @@
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\bin\Debug\net6.0\CSharpETH.exe
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\bin\Debug\net6.0\CSharpETH.deps.json
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\bin\Debug\net6.0\CSharpETH.runtimeconfig.json
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\bin\Debug\net6.0\CSharpETH.dll
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\bin\Debug\net6.0\CSharpETH.pdb
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\CSharpETH.csproj.AssemblyReference.cache
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\CSharpETH.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\CSharpETH.AssemblyInfoInputs.cache
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\CSharpETH.AssemblyInfo.cs
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\CSharpETH.csproj.CoreCompileInputs.cache
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\CSharpETH.dll
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\refint\CSharpETH.dll
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\CSharpETH.pdb
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\CSharpETH.genruntimeconfig.cache
+D:\Programming\quantum\QRNG\ETHZ demo\CSharpETH\CSharpETH\CSharpETH\obj\Debug\net6.0\ref\CSharpETH.dll

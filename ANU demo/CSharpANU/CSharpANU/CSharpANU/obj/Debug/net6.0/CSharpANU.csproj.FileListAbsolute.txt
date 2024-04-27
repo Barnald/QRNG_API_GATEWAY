@@ -1,0 +1,15 @@
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\bin\Debug\net6.0\CSharpANU.exe
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\bin\Debug\net6.0\CSharpANU.deps.json
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\bin\Debug\net6.0\CSharpANU.runtimeconfig.json
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\bin\Debug\net6.0\CSharpANU.dll
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\bin\Debug\net6.0\CSharpANU.pdb
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\CSharpANU.csproj.AssemblyReference.cache
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\CSharpANU.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\CSharpANU.AssemblyInfoInputs.cache
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\CSharpANU.AssemblyInfo.cs
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\CSharpANU.csproj.CoreCompileInputs.cache
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\CSharpANU.dll
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\refint\CSharpANU.dll
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\CSharpANU.pdb
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\CSharpANU.genruntimeconfig.cache
+D:\Programming\quantum\QRNG\ANU demo\CSharpANU\CSharpANU\CSharpANU\obj\Debug\net6.0\ref\CSharpANU.dll
