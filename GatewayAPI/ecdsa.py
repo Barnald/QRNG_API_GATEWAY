@@ -3,7 +3,7 @@
 import requests
 import os
 from dotenv import load_dotenv
-import gmpy2 as gmpy
+import random
 #Defining constants
 load_dotenv() 
 API_KEY = os.getenv("API_KEY")
@@ -52,14 +52,13 @@ class Elliptic_curve:
         backer = [x,-y % self.p]
         return backer
 
-    def mod_inverse(x, m):
+    def mod_inverse(self, x, m):
         '''
         Calculates modular inverse for x mod m
         '''
-        for i in range(1, m):
-            if ((i%m)*(x%m)%m ==1):
-                return i
-        return 0
+        if x < 0:
+            x = (x + m * int(abs(x)/m) + m) % m
+        return x
         
     def ecc_add(self, P, Q):
         '''
@@ -78,9 +77,9 @@ class Elliptic_curve:
         
         x1 = P[0]; y1 = P[1]
         x2 = Q[0]; y2 = Q[1]
-        beta = ((y2-y1) * mod_inverse((x2-x1), self.p)) % self.p
-        x3 = (beta**2 - x1 - x2) % self.p
-        y3 = (beta*x1-beta*x3 - y1) % self.p
+        lamb = ((y2-y1) * self.mod_inverse((x2-x1), self.p)) % self.p
+        x3 = (lamb**2 - x1 - x2) % self.p
+        y3 = (lamb*x1-lamb*x3 - y1) % self.p
         return [x3, y3]
 
     def ecc_double(self, P):
@@ -95,9 +94,9 @@ class Elliptic_curve:
             return [None, None]
 
         x  = P[0]; y = P[1]
-        beta = (3 * (x**2) + self.a) * pow(2*y, self.p-2) % self.p
-        backer_x = (beta**2 - x - x) % self.p
-        backer_y = (beta*(x - backer_x) - y) % self.p
+        lamb = (3 * (x**2) + self.a) * self.mod_inverse(2*y, self.p) % self.p
+        backer_x = (lamb**2 - 2*x) % self.p
+        backer_y = (- lamb*backer_x + lamb*x - y) % self.p
         return [backer_x, backer_y]
 
     def double_and_add(self, P, n):
@@ -114,7 +113,6 @@ class Elliptic_curve:
         backer = (P[0], P[1])
         i = 0
         for bit in bits:
-            print(i)
             i+=1
             backer = self.ecc_double(backer)
             if bit == '1':
@@ -125,6 +123,7 @@ class Elliptic_curve:
 #Preparation
 print("GENERATING KEYS:")
 curve = Elliptic_curve()
+#private_key = random.getrandbits(256)
 response, private_key = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
 if private_key == 0:
     print("Failed to generate private_key --> aborting with response code: ", response)
