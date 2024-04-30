@@ -52,6 +52,15 @@ class Elliptic_curve:
         backer = [x,-y % self.p]
         return backer
 
+    def mod_inverse(x, m):
+        '''
+        Calculates modular inverse for x mod m
+        '''
+        for i in range(1, m):
+            if ((i%m)*(x%m)%m ==1):
+                return i
+        return 0
+        
     def ecc_add(self, P, Q):
         '''
         Calculates P + Q on the elliptic curve
@@ -69,9 +78,9 @@ class Elliptic_curve:
         
         x1 = P[0]; y1 = P[1]
         x2 = Q[0]; y2 = Q[1]
-        beta = (y1-y2) / pow((x2-x1), self.p-2) % self.p
+        beta = ((y2-y1) * mod_inverse((x2-x1), self.p)) % self.p
         x3 = (beta**2 - x1 - x2) % self.p
-        y3 = (beta*(x1-x3) - y1) % self.p
+        y3 = (beta*x1-beta*x3 - y1) % self.p
         return [x3, y3]
 
     def ecc_double(self, P):
