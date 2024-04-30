@@ -3,7 +3,10 @@
 import requests
 import os
 from dotenv import load_dotenv
-import random
+import math
+import hashlib
+import ecdsa
+from ecdsa.util import string_to_number, number_to_string
 #Defining constants
 load_dotenv() 
 API_KEY = os.getenv("API_KEY")
@@ -30,6 +33,24 @@ def get_random_number(QRN_URL, API_KEY):
 		print(f"Error: {response.status_code}")
 
 	return response, int(backer['data'][0], 16)
+
+def hash_text(text):
+    hash = hashlib.sha256(str(text).encode("utf-8")).hexdigest()
+    return int(hash, 16)
+
+
+def verify_signature(public_key, r, s, message):
+    # Create a VerifyingKey from a public key string
+    vk = ecdsa.VerifyingKey.from_string(public_key, curve=ecdsa.BRAINPOOLP160r1)
+    
+    # Convert r and s from integers to bytes and concatenate them
+    signature = number_to_string(r, order=vk.pubkey.order) + number_to_string(s, order=vk.pubkey.order)
+    
+    # Verify the signature
+    try:
+        return vk.verify(signature, message)
+    except ecdsa.BadSignatureError:
+        return False
 
 class Elliptic_curve:
     def __init__(self) -> None:
@@ -58,7 +79,16 @@ class Elliptic_curve:
         '''
         if x < 0:
             x = (x + m * int(abs(x)/m) + m) % m
-        return x
+        if math.gcd(x, m)!=1:
+            return None
+        u1, u2, u3 = 1, 0, x
+        v1, v2, v3 = 0, 1, m
+        while v3 != 0:
+        
+            # // is the integer division operator
+            q = u3 // v3 
+            v1, v2, v3, u1, u2, u3 = (u1 - q * v1), (u2 - q * v2), (u3 - q * v3), v1, v2, v3
+        return u1 % m
         
     def ecc_add(self, P, Q):
         '''
@@ -102,22 +132,21 @@ class Elliptic_curve:
     def double_and_add(self, P, n):
         '''
         Calculates nP mod m with
-            P: Point on curve
+            P: Base point on curve
             n: Integer
-            a: Curve parameter
-            mod: Prime modulo
         '''
         bits = bin(n)
         bits = bits[2:len(bits)] #get rid if unnecessary leading '0b'
-        bits = bits[1:len(bits)]
+        bits = bits[1:len(bits)] #the first bit will be ignored
         backer = (P[0], P[1])
-        i = 0
         for bit in bits:
-            i+=1
             backer = self.ecc_double(backer)
             if bit == '1':
                 backer = self.ecc_add(backer, P)
         return backer
+    def get_n_leftmost_bits(self, hash):
+        bits = bin(hash)
+        return bits[:self.q]
 
 
 #Preparation
@@ -131,4 +160,22 @@ if private_key == 0:
 print("Private key: ", private_key)
 public_key = curve.double_and_add(curve.G, private_key)
 print("Public key: ", public_key)
+
 #Algorithm
+message = "Hello PARIPA!"
+print("Message: ", message)
+message = hash_text(message)
+z = curve.get_n_leftmost_bits(message)
+z = int(z, 2)
+print("Hash: ", message)
+
+response, k = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)#random number for the signature
+kG = curve.double_and_add(curve.G, k)
+
+r = kG[0] % curve.p
+s = (z + r*private_key) * curve.mod_inverse(k, curve.p) % curve.p
+print("Sign: (r, s): ", r, s)
+
+output = verify_signature(public_key, r, s, "Hello PARIPA!")
+
+print(output)
