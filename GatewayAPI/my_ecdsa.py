@@ -5,8 +5,6 @@ import os
 from dotenv import load_dotenv
 import math
 import hashlib
-import ecdsa
-from ecdsa.util import string_to_number, number_to_string
 #Defining constants
 load_dotenv() 
 API_KEY = os.getenv("API_KEY")
@@ -39,18 +37,17 @@ def hash_text(text):
     return int(hash, 16)
 
 
-def verify_signature(public_key, r, s, message):
-    # Create a VerifyingKey from a public key string
-    vk = ecdsa.VerifyingKey.from_string(public_key, curve=ecdsa.BRAINPOOLP160r1)
-    
-    # Convert r and s from integers to bytes and concatenate them
-    signature = number_to_string(r, order=vk.pubkey.order) + number_to_string(s, order=vk.pubkey.order)
-    
-    # Verify the signature
-    try:
-        return vk.verify(signature, message)
-    except ecdsa.BadSignatureError:
-        return False
+def verify_signature(message, public_key, r, s, curve):
+    print("Verifying...")
+    hashed_message = hash_text(message)
+    s1 = curve.mod_inverse(s, curve.p)
+    R = curve.double_and_add(curve.G, (hashed_message*s1))
+    R_second = curve.double_and_add(public_key, (r*s1))
+    R = curve.ecc_add(R, R_second)
+    r1 = R[0]
+    print("r=", r)
+    print("r1=", r1)
+    return r1==r
 
 class Elliptic_curve:
     def __init__(self) -> None:
@@ -62,6 +59,7 @@ class Elliptic_curve:
         self.Gy = int(0x1667CB477A1A8EC338F94741669C976316DA6321)
         self.G = [self.Gx, self.Gy]
         self.q = int(0xE95E4A5F737059DC60DF5991D45029409E60FC09)
+        #print(self.G)
 
     def inv(self, P):
         x = P[0]
@@ -124,7 +122,7 @@ class Elliptic_curve:
             return [None, None]
 
         x  = P[0]; y = P[1]
-        lamb = (3 * (x**2) + self.a) * self.mod_inverse(2*y, self.p) % self.p
+        lamb = ((3 * (x**2) + self.a) * self.mod_inverse(2*y, self.p)) % self.p
         backer_x = (lamb**2 - 2*x) % self.p
         backer_y = (- lamb*backer_x + lamb*x - y) % self.p
         return [backer_x, backer_y]
@@ -137,9 +135,10 @@ class Elliptic_curve:
         '''
         bits = bin(n)
         bits = bits[2:len(bits)] #get rid if unnecessary leading '0b'
-        bits = bits[1:len(bits)] #the first bit will be ignored
+        #bits = bits[1:len(bits)] #the first bit will be ignored
         backer = (P[0], P[1])
-        for bit in bits:
+        for i in range(1, len(bits)):
+            bit = bits[i:i+1]
             backer = self.ecc_double(backer)
             if bit == '1':
                 backer = self.ecc_add(backer, P)
@@ -154,6 +153,8 @@ print("GENERATING KEYS:")
 curve = Elliptic_curve()
 #private_key = random.getrandbits(256)
 response, private_key = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
+while private_key < 0 or private_key > curve.p-1:
+    response, private_key = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
 if private_key == 0:
     print("Failed to generate private_key --> aborting with response code: ", response)
     exit(1)
@@ -162,20 +163,31 @@ public_key = curve.double_and_add(curve.G, private_key)
 print("Public key: ", public_key)
 
 #Algorithm
+
+#prepearing message and its hash
 message = "Hello PARIPA!"
 print("Message: ", message)
-message = hash_text(message)
-z = curve.get_n_leftmost_bits(message)
-z = int(z, 2)
-print("Hash: ", message)
+hashed_message = hash_text(message)
 
-response, k = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)#random number for the signature
-kG = curve.double_and_add(curve.G, k)
+#generating random number for the signature
+response, k = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
+while k < 1 or k > curve.p-1:
+    response, k = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
+#calculate the random point using k
+R = curve.double_and_add(curve.G, k)
 
-r = kG[0] % curve.p
-s = (z + r*private_key) * curve.mod_inverse(k, curve.p) % curve.p
+#get the first part of the signature, then calculate the sign proof
+r = R[0]
+s = curve.mod_inverse(k, curve.p) * (hashed_message + r*private_key) % curve.p
 print("Sign: (r, s): ", r, s)
 
-output = verify_signature(public_key, r, s, "Hello PARIPA!")
+output = verify_signature(message=message, public_key=public_key, r=r, s=s, curve=curve)
 
 print(output)
+
+print(private_key)
+print(public_key)
+print(hashed_message)
+print(k)
+print(r)
+print(s)
