@@ -147,14 +147,12 @@ class Elliptic_curve:
         bits = bin(hash)
         return bits[:self.q]
 
-
 #Preparation
 print("GENERATING KEYS:")
 curve = Elliptic_curve()
 #private_key = random.getrandbits(256)
 response, private_key = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
-while private_key < 0 or private_key > curve.p-1:
-    response, private_key = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
+private_key = private_key % curve.p
 if private_key == 0:
     print("Failed to generate private_key --> aborting with response code: ", response)
     exit(1)
@@ -169,10 +167,14 @@ message = "Hello PARIPA!"
 print("Message: ", message)
 hashed_message = hash_text(message)
 
+#output = verify_signature(message=message, public_key=public_key, r=0xA7001557138BF1B5B434CC94D87B236235589087, s=0x172CE80F486EDE5B38EA180F0F65F6B41770272F, curve=curve)
+
+#print(output)
+#exit(0)
+
 #generating random number for the signature
-response, k = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
-while k < 1 or k > curve.p-1:
-    response, k = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY)
+response, k = get_random_number(QRN_URL=QRN_URL, API_KEY=API_KEY) 
+k = k % curve.p
 #calculate the random point using k
 R = curve.double_and_add(curve.G, k)
 
