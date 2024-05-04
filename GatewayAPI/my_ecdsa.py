@@ -15,22 +15,22 @@ QRN_URL = "https://api.quantumnumbers.anu.edu.au/"
 Calls remote API to get a Quatnum Random Number
 '''
 def get_random_number(QRN_URL, API_KEY):
-	DTYPE = "hex16"  # uint8, uint16, hex8, hex16
-	LENGTH = 1  # between 1--1024
-	BLOCKSIZE = 10  # between 1--10. Only needed for hex8 and hex16
+    DTYPE = "hex16"  # uint8, uint16, hex8, hex16
+    LENGTH = 1  # between 1--1024
+    BLOCKSIZE = 10  # between 1--10. Only needed for hex8 and hex16
 
-	params = {"length": LENGTH, "type": DTYPE, "size": BLOCKSIZE}
-	headers = {"x-api-key": API_KEY}
+    params = {"length": LENGTH, "type": DTYPE, "size": BLOCKSIZE}
+    headers = {"x-api-key": API_KEY}
 
-	response = requests.get(QRN_URL, headers=headers, params=params)
+    response = requests.get(QRN_URL, headers=headers, params=params)
 
-	backer = 0
-	if response.status_code == 200:
-		backer = response.json()
-	else:
-		print(f"Error: {response.status_code}")
+    backer = 0
+    if response.status_code == 200:
+        backer = response.json()
+    else:
+        print(f"Error: {response.status_code}")
 
-	return response, int(backer['data'][0], 16)
+    return response, int(backer['data'][0], 16)
 
 def hash_text(text):
     hash = hashlib.sha256(str(text).encode("utf-8")).hexdigest()
@@ -59,8 +59,8 @@ class Elliptic_curve:
         self.Gy = int(0x1667CB477A1A8EC338F94741669C976316DA6321)#0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8#
         self.G = [self.Gx, self.Gy]
         self.q = int(0xE95E4A5F737059DC60DF5991D45029409E60FC09)#0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141#
-        #print(self.G)
-
+        #self.p = self.q
+        
     def inv(self, P):
         x = P[0]
 

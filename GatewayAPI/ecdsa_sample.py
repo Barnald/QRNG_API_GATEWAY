@@ -129,6 +129,10 @@ def get_random_number():
 
 response, privateKey = get_random_number() #32 byte secret key
 print("private key:", privateKey)
+'''
+import random
+privateKey = random.getrandbits(256)
+'''
 # print("private key: ",privateKey)
 publicKey = applyDoubleAndAddMethod(base, privateKey, a, d, p)
 print("public key: ", publicKey)
