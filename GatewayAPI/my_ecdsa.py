@@ -69,7 +69,8 @@ async def demo():
     
     #Algorithm
     #Sign
-    message = 'Hello PARIPA!'
+    #message = 'Hello PARIPA!'
+    message = input("Give the message: ")
     print("Message to be signed: ", message)
     r, s = await ecdsa_sign(message, private_key, curve)
     print("->Signature: (r, s): ({}, {})".format(r, s))
