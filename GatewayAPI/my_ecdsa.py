@@ -34,35 +34,35 @@ def get_random_number(QRN_URL, API_KEY):
 
     return response, int(backer['data'][0], 16)
 
-def hash_text(text):
-    hash = hashlib.sha256(str(text).encode("utf-8")).hexdigest()
+def hash_text_to_int(text):
+    hash = hashlib.sha1(text).hexdigest()
     return int(hash, 16)
 
 
 def verify_signature(message, public_key, r, s, curve):
     print("Verifying...")
-    hashed_message = hash_text(message)
-    s1 = curve.mod_inverse(s, curve.n)
-    R = curve.double_and_add(curve.G, (hashed_message*s1))
-    R_second = curve.double_and_add(public_key, (r*s1))
-    R = curve.ecc_add(R, R_second)
-    r1 = R[0] % curve.n
+    hashed_message = hash_text_to_int(message)
+    w = curve.mod_inverse(s, curve.p)
+    u1 = hashed_message*w % curve.p
+    u2 = r*w % curve.p
+    X = curve.ecc_add(curve.double_and_add(curve.G, u1), curve.double_and_add(public_key, u2))
+    v = int(X[0]) % curve.p
     print("r=", r)
-    print("r1=", r1)
-    return r1==r
+    print("v=", v)
+    return r == v
 
 class Elliptic_curve:
     def __init__(self) -> None:
         #Defines curve parameters: Brainpool P-160-r1
         #secp256k1
-        #self.p = 115792089237316195423570985008687907852837564279074904382605163141518161494337#2**256-2**32-2**9-2**8-2**7-2**6-2**4-1#
-        self.n = 115792089237316195423570985008687907852837564279074904382605163141518161494337
+        self.p = 115792089237316195423570985008687907852837564279074904382605163141518161494337#2**256-2**32-2**9-2**8-2**7-2**6-2**4-1#
+        #self.n = 115792089237316195423570985008687907852837564279074904382605163141518161494337
         self.a = 0#0
         self.b = 7#7
         self.Gx = 55066263022277343669578718895168534326250603453777594175500187360389116729240#0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798#
         self.Gy = 32670510020758816978083085130507043184471273380659243275938904335757337482424#0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8#
         self.G = [self.Gx, self.Gy]
-        #self.q = 115792089237316195423570985008687907852837564279074904382605163141518161494337#0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141#
+        self.q = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141#
         #self.p = self.q
         
     def inv(self, P):
@@ -72,7 +72,7 @@ class Elliptic_curve:
             return [None,None]
 
         y = P[1]
-        backer = [x,-y % self.n]
+        backer = [x,-y % self.p]
         return backer
 
     def mod_inverse(self, x, m):
@@ -109,9 +109,9 @@ class Elliptic_curve:
         
         x1 = P[0]; y1 = P[1]
         x2 = Q[0]; y2 = Q[1]
-        lamb = ((y2-y1) * self.mod_inverse((x2-x1), self.n)) % self.n
-        x3 = (lamb**2 - x1 - x2) % self.n
-        y3 = (lamb*x1-lamb*x3 - y1) % self.n
+        lamb = ((y2-y1) * self.mod_inverse((x2-x1), self.p)) % self.p
+        x3 = (lamb**2 - x1 - x2) % self.p
+        y3 = (lamb*(x1-x3) - y1) % self.p
         return [x3, y3]
 
     def ecc_double(self, P):
@@ -126,9 +126,9 @@ class Elliptic_curve:
             return [None, None]
 
         x  = P[0]; y = P[1]
-        lamb = ((3 * (x**2) + self.a) * self.mod_inverse(2*y, self.n)) % self.n
-        backer_x = (lamb**2 - 2*x) % self.n
-        backer_y = (- lamb*backer_x + lamb*x - y) % self.n
+        lamb = ((3 * (x**2) + self.a) * self.mod_inverse(2*y, self.p)) % self.p
+        backer_x = (lamb**2 - 2*x) % self.p
+        backer_y = (lamb*(x-backer_x)-y) % self.p
         return [backer_x, backer_y]
 
     def double_and_add(self, P, n):
@@ -153,7 +153,7 @@ async def demo():
     print("GENERATING KEYS:")
     curve = Elliptic_curve()
     #private_key = random.getrandbits(256)
-    response = await get_random_int(256, curve.n-1)
+    response = await get_random_int(256, curve.p)
     if response['success']=='false':
         exit(1)
     private_key = response['data']
@@ -167,21 +167,30 @@ async def demo():
     #Algorithm
 
     #prepearing message and its hash
-    message = "Hello PARIPA!"
+    message = b'Hello PARIPA!'
     print("Message: ", message)
-    hashed_message = hash_text(message)
+    hashed_message = hash_text_to_int(message)
 
     #generating random number for the signature
-    response = await get_random_int(256, curve.n-1)
-    if response['success']=='false':
-        exit(1)
-    k = response['data']
+    k = 0
+    while k<1:
+        response = await get_random_int(256, curve.p)
+        if response['success']=='false':
+            exit(1)
+        k = response['data']
+
     #calculate the random point using k
     R = curve.double_and_add(curve.G, k)
 
     #get the first part of the signature, then calculate the sign proof
-    r = R[0] % curve.n
-    s = curve.mod_inverse(k, curve.n) * (hashed_message + r*private_key) % curve.n
+    r = int(R[0]) % curve.p
+    if r == 0:
+        print("r is 0")
+        exit(1)
+    s = curve.mod_inverse(k, curve.p) * (hashed_message + private_key*r) % curve.p
+    if s == 0:
+        print('s is 0')
+        exit(1)
     print("Sign: (r, s): ", r, s)
 
     output = verify_signature(message=message, public_key=public_key, r=r, s=s, curve=curve)

@@ -11,7 +11,7 @@ async def get_random_int(size_in_bits: int, max: int):
     ''''
     Function to call a QRNG API provider for random integer.
         size_in_bits: Integer that represents the size of the number in bits.
-        max: Integer that represents the maximum value for the generation.
+        max: Integer that represents the maximum value for the generation. (Exclusive)
     Returns: JSON object, containing 3 fields:
         success: Shows if the request was successful -> {true, false}
         provider: Shows which provider sent the random number

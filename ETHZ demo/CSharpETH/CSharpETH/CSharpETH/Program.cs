@@ -11,7 +11,7 @@ await ProcessRepositoriesAsync(client);
 static async Task ProcessRepositoriesAsync(HttpClient client)
 {
     var json = await client.GetStringAsync(
-         "http://random.openqu.org/api/randint");
+         "http://qrng.ethz.ch/api/randint");
 
     Console.Write(json);
 }
