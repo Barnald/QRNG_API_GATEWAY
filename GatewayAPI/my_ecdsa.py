@@ -1,4 +1,3 @@
-#https://github.com/user8547/fast-ecc-python/blob/master/secp256r1_python.py
 #Imports
 import requests
 import os
@@ -13,27 +12,6 @@ API_KEY = os.getenv("API_KEY")
 QRN_URL = "https://api.quantumnumbers.anu.edu.au/"
 
 #Functions
-'''
-Calls remote API to get a Quatnum Random Number
-'''
-def get_random_number(QRN_URL, API_KEY):
-    DTYPE = "hex16"  # uint8, uint16, hex8, hex16
-    LENGTH = 1  # between 1--1024
-    BLOCKSIZE = 10  # between 1--10. Only needed for hex8 and hex16
-
-    params = {"length": LENGTH, "type": DTYPE, "size": BLOCKSIZE}
-    headers = {"x-api-key": API_KEY}
-
-    response = requests.get(QRN_URL, headers=headers, params=params)
-
-    backer = 0
-    if response.status_code == 200:
-        backer = response.json()
-    else:
-        print(f"Error: {response.status_code}")
-
-    return response, int(backer['data'][0], 16)
-
 def hash_text_to_int(text):
     hash = hashlib.sha1(text).hexdigest()
     return int(hash, 16)
@@ -52,17 +30,18 @@ def verify_signature(message, public_key, r, s, curve):
     return r == v
 
 class Elliptic_curve:
-    def __init__(self) -> None:
-        #Defines curve parameters: Brainpool P-160-r1
-        #secp256k1
-        self.p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F#2**256-2**32-2**9-2**8-2**7-2**6-2**4-1#
-        self.a = 0#0
-        self.b = 7#7
-        self.Gx = 55066263022277343669578718895168534326250603453777594175500187360389116729240#0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798#
-        self.Gy = 32670510020758816978083085130507043184471273380659243275938904335757337482424#0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8#
+    #secp256k1 parameters based on: https://www.secg.org/sec2-v2.pdf
+    def __init__(self, p=0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F,
+            a=0, b=7, Gx=55066263022277343669578718895168534326250603453777594175500187360389116729240,
+            Gy=32670510020758816978083085130507043184471273380659243275938904335757337482424,
+            n=0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141) -> None:
+        self.p = p
+        self.a = a
+        self.b = b
+        self.Gx = Gx
+        self.Gy = Gy
         self.G = [self.Gx, self.Gy]
-        self.n = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141#
-        #self.p = self.q
+        self.n = n
         
     def inv(self, P):
         x = P[0]
@@ -85,8 +64,6 @@ class Elliptic_curve:
         u1, u2, u3 = 1, 0, x
         v1, v2, v3 = 0, 1, m
         while v3 != 0:
-        
-            # // is the integer division operator
             q = u3 // v3 
             v1, v2, v3, u1, u2, u3 = (u1 - q * v1), (u2 - q * v2), (u3 - q * v3), v1, v2, v3
         return u1 % m
@@ -138,10 +115,9 @@ class Elliptic_curve:
         '''
         bits = bin(n)
         bits = bits[2:len(bits)] #get rid if unnecessary leading '0b'
-        #bits = bits[1:len(bits)] #the first bit will be ignored
+        bits = bits[1:len(bits)] #the first bit will be ignored
         backer = (P[0], P[1])
-        for i in range(1, len(bits)):
-            bit = bits[i:i+1]
+        for bit in bits:
             backer = self.ecc_double(backer)
             if bit == '1':
                 backer = self.ecc_add(backer, P)
@@ -151,7 +127,6 @@ async def demo():
     #Preparation
     print("GENERATING KEYS:")
     curve = Elliptic_curve()
-    #private_key = random.getrandbits(256)
     response = await get_random_int(256, curve.n)
     if response['success']=='false':
         exit(1)
@@ -164,10 +139,9 @@ async def demo():
     print("Public key: ", public_key)
 
     #Algorithm
-
     #prepearing message and its hash
     message = b'Hello PARIPA!'
-    print("Message: ", message)
+    print("Message: ", message.decode('ascii'))
     hashed_message = hash_text_to_int(message)
 
     #generating random number for the signature
@@ -194,14 +168,7 @@ async def demo():
 
     output = verify_signature(message=message, public_key=public_key, r=r, s=s, curve=curve)
 
-    print(output)
-
-    print(private_key)
-    print(public_key)
-    print(hashed_message)
-    print(k)
-    print(r)
-    print(s)
+    print("Result of the verification: ", output)
 
 def main():
     loop = asyncio.get_event_loop()
