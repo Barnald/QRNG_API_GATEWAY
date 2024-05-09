@@ -41,11 +41,9 @@ async def get_random_int(size_in_bits: int, max: int):
 
     #Calling ETHZ API
     params = {"min": 0, "max": 1, "size":size_in_bits}
-    print(params)
     response = requests.get(ethz_url, headers=None, params=params)
     if response.status_code == 200:
         json = response.json()
-        print(json)
         backer = ""
         for bit in json['result']:
             backer += str(bit)
