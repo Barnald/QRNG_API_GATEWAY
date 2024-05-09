@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 import requests
 import uvicorn
-from dotenv import load_dotenv 
-import os
+from getConnections import get_anu_params, get_ethz_params
 
 app = FastAPI()
 
@@ -17,17 +16,8 @@ async def get_random_int(size_in_bits: int, max: int):
         provider: Shows which provider sent the random number
         data: Contains the random number in decimal   
     '''
-    load_dotenv()
-    anu_url = "https://qrng.anu.edu.au/API/jsonI.php"
-    API_KEY = os.getenv("API_KEY")
-    ethz_url = "http://qrng.ethz.ch/api/randint"
-
     #Calling ANU API
-    DTYPE = "uint8"
-
-    params = {"length": size_in_bits, "type": DTYPE}
-    headers = {"x-api-key": API_KEY}
-
+    anu_url, headers, params = get_anu_params(size_in_bits)
     response = requests.get(anu_url, headers=headers, params=params)
 
     backer = 0
@@ -40,8 +30,9 @@ async def get_random_int(size_in_bits: int, max: int):
         return {"success":"true", "provider":"ANU", "data":backer}
 
     #Calling ETHZ API
-    params = {"min": 0, "max": 1, "size":size_in_bits}
-    response = requests.get(ethz_url, headers=None, params=params)
+    ethz_url, headers, params = get_ethz_params(size_in_bits)
+    response = requests.get(ethz_url, headers=headers, params=params)
+
     if response.status_code == 200:
         json = response.json()
         backer = ""
